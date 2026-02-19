@@ -1,0 +1,32 @@
+[package]
+name = "white-dragon"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+objc2 = "0.6"
+objc2-foundation = { version = "0.3", features = ["NSString", "NSURL", "NSArray", "NSObject", "NSThread"] }
+objc2-app-kit = { version = "0.3", features = [
+    "NSApplication",
+    "NSWindow",
+    "NSView",
+    "NSStackView",
+    "NSImageView",
+    "NSTextField",
+    "NSImage",
+    "NSWorkspace",
+    "NSPasteboard",
+    "NSPasteboardItem",
+    "NSDragging",
+    "NSDraggingSession",
+    "NSDraggingItem",
+    "NSEvent",
+    "NSResponder",
+    "NSRunningApplication",
+    "NSScreen",
+    "NSGraphics",
+    "NSLayoutConstraint",
+    "NSColor",
+] }
+clap = { version = "4", features = ["derive"] }
+block2 = "0.6"
