@@ -84,15 +84,23 @@ impl DragView {
         });
         let this: Retained<Self> = unsafe { msg_send![super(this), initWithFrame: frame] };
 
-        this.setup_subviews(mtm, all_files.len());
+        this.setup_subviews(mtm, &all_files);
 
         this
     }
 
-    fn setup_subviews(&self, mtm: MainThreadMarker, file_count: usize) {
-        // Get generic file icon
+    fn setup_subviews(&self, mtm: MainThreadMarker, all_files: &[PathBuf]) {
         let workspace = NSWorkspace::sharedWorkspace();
-        let icon: Retained<NSImage> = workspace.iconForFileType(&NSString::from_str("public.data"));
+        let file_count = all_files.len();
+
+        // Use first file's icon
+        let icon: Retained<NSImage> = if let Some(first_file) = all_files.first() {
+            let path_str = NSString::from_str(&first_file.to_string_lossy());
+            workspace.iconForFile(&path_str)
+        } else {
+            // Fallback: use a temp path to get generic icon
+            workspace.iconForFile(&NSString::from_str("/tmp"))
+        };
         icon.setSize(NSSize::new(32.0, 32.0));
 
         let image_view = NSImageView::imageViewWithImage(&icon, mtm);
