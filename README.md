@@ -19,9 +19,29 @@ white-dragon /path/to/file.txt
 
 ## Install
 
+### Homebrew
+
+```bash
+brew install Dimfred/tap/white-dragon
+```
+
+### From source
+
 ```bash
 make init
 make install
+```
+
+## lf Integration
+
+Add this to your `lfrc`:
+
+```bash
+cmd white_dragon %{{
+    echo "$fx" | tr '\n' '\0' | xargs -0 white-dragon -x
+}}
+
+map ds white_dragon
 ```
 
 ## Acknowledgements
