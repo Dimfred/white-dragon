@@ -27,7 +27,7 @@ uninstall: ## remove from ~/.local/bin
 
 ################################################################################
 # RELEASE
-release: build ## create GitHub release
+github-release: build ## create GitHub release
 	@VERSION=$$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/'); \
 	BINARY="releases/white-dragon-v$${VERSION}-macos-arm64"; \
 	mkdir -p releases; \
@@ -49,13 +49,39 @@ release: build ## create GitHub release
 		--latest; \
 	echo "Released v$$VERSION"
 
+release: github-release ## create GitHub release and update brew formula
+	@$(MAKE) brew-update
+	@VERSION=$$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/'); \
+	git add Formula/white-dragon.rb; \
+	git commit -m "chore: formula update"; \
+	git push; \
+	echo "Committed and pushed formula update"
+
 version-patch: ## bump patch version (0.1.0 -> 0.1.1)
 	@CURRENT=$$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/'); \
 	IFS='.' read -r MAJOR MINOR PATCH <<< "$$CURRENT"; \
 	NEW_PATCH=$$((PATCH + 1)); \
 	NEW_VERSION="$$MAJOR.$$MINOR.$$NEW_PATCH"; \
 	sed -i '' "s/^version = \".*\"/version = \"$$NEW_VERSION\"/" Cargo.toml; \
-	echo "Version bumped from $$CURRENT to $$NEW_VERSION"
+	echo "Version bumped from $$CURRENT to $$NEW_VERSION"; \
+	git add Cargo.toml; \
+	git commit -m "chore: version bump"; \
+	echo "Committed version bump"
+
+################################################################################
+# BREW
+brew-update: ## update brew formula and push to homebrew-tap
+	@VERSION=$$(grep -m1 '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/'); \
+	URL="https://github.com/Dimfred/white-dragon/archive/refs/tags/v$${VERSION}.tar.gz"; \
+	echo "Fetching $$URL"; \
+	SHA=$$(curl -sL "$$URL" | shasum -a 256 | cut -d' ' -f1); \
+	echo "SHA256: $$SHA"; \
+	sed -i '' "s|url \".*\"|url \"$$URL\"|" Formula/white-dragon.rb; \
+	sed -i '' "s|sha256 \".*\"|sha256 \"$$SHA\"|" Formula/white-dragon.rb; \
+	echo "Formula updated for v$$VERSION"; \
+	cp Formula/white-dragon.rb ../homebrew-tap/Formula/; \
+	cd ../homebrew-tap && git add . && git commit -m "Update white-dragon to v$$VERSION" && git push; \
+	echo "Pushed to homebrew-tap"
 
 ################################################################################
 # INIT
